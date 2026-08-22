@@ -31,6 +31,10 @@ const updateCategories = async (req) => {
   const { id } = req.params;
   const { name } = req.body;
 
+  if (name === undefined) {
+    throw new BadRequestError("Nama kategori harus diisi");
+  }
+
   const check = await Categories.findOne({
     name,
     _id: { $ne: id },
