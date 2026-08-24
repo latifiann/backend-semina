@@ -1,6 +1,16 @@
 const Categories = require("../../api/v1/categories/model");
 const { BadRequestError, NotFoundError } = require("../../errors");
 
+const validateCategoryName = (name) => {
+  if (name === undefined) {
+    throw new BadRequestError("Nama kategori harus diisi");
+  }
+
+  if (typeof name !== "string") {
+    throw new BadRequestError("Nama kategori harus berupa string");
+  }
+};
+
 const getAllCategories = async () => {
   const result = await Categories.find();
 
@@ -9,6 +19,9 @@ const getAllCategories = async () => {
 
 const createCategories = async (req) => {
   const { name } = req.body;
+
+  validateCategoryName(name);
+
   const check = await Categories.findOne({ name });
 
   if (check) throw new BadRequestError("Kategori nama duplikat");
@@ -31,9 +44,7 @@ const updateCategories = async (req) => {
   const { id } = req.params;
   const { name } = req.body;
 
-  if (name === undefined) {
-    throw new BadRequestError("Nama kategori harus diisi");
-  }
+  validateCategoryName(name);
 
   const check = await Categories.findOne({
     name,

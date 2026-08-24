@@ -2,13 +2,28 @@ const Talents = require("../../api/v1/talents/model");
 const { checkingImage } = require("./images");
 const { NotFoundError, BadRequestError } = require("../../errors");
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const getAllTalents = async (req) => {
   const { keyword } = req.query;
 
   let condition = {};
 
-  if (keyword) {
-    condition = { ...condition, name: { $regex: keyword, $options: "i" } };
+  if (keyword !== undefined && typeof keyword !== "string") {
+    throw new BadRequestError("Keyword harus berupa string");
+  }
+
+  const normalizedKeyword = keyword?.trim();
+
+  if (normalizedKeyword && normalizedKeyword.length > 100) {
+    throw new BadRequestError("Keyword maksimal 100 karakter");
+  }
+
+  if (normalizedKeyword) {
+    condition = {
+      ...condition,
+      name: { $regex: escapeRegex(normalizedKeyword), $options: "i" },
+    };
   }
 
   const result = await Talents.find(condition)
