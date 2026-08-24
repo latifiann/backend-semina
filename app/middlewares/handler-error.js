@@ -1,4 +1,5 @@
 const { StatusCodes } = require("http-status-codes");
+const multer = require("multer");
 const { CustomAPIError } = require("../errors");
 
 const errorHandlerMiddleware = (err, req, res, next) => {
@@ -11,6 +12,15 @@ const errorHandlerMiddleware = (err, req, res, next) => {
   if (err instanceof CustomAPIError) {
     customError.statusCode = err.statusCode;
     customError.msg = err.message;
+    isKnownError = true;
+  }
+
+  if (err instanceof multer.MulterError) {
+    customError.statusCode = StatusCodes.BAD_REQUEST;
+    customError.msg =
+      err.code === "LIMIT_FILE_SIZE"
+        ? "File size exceeds the 3 MB limit"
+        : "Invalid file upload";
     isKnownError = true;
   }
 
