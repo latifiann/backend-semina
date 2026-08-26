@@ -69,6 +69,7 @@ const updateTalents = async (req) => {
   const { id } = req.params;
   const { name, image, role } = req.body;
 
+  await checkingTalents(id);
   await checkingImage(image);
 
   const check = await Talents.findOne({
