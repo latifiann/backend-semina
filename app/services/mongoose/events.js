@@ -3,6 +3,7 @@ const { checkingImage } = require("./images");
 const { checkingCategories } = require("./categories");
 const { checkingTalents } = require("./talents");
 const { BadRequestError, NotFoundError } = require("../../errors");
+const mongoose = require("mongoose");
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -27,12 +28,21 @@ const getAllEvents = async (req) => {
     };
   }
 
-  if (category) {
-    condition = { ...condition, category: category };
+  if (category !== undefined) {
+    if (
+      typeof category !== "string" ||
+      !mongoose.isObjectIdOrHexString(category)
+    ) {
+      throw new BadRequestError("Id kategori tidak valid");
+    }
+    condition.category = category;
   }
 
-  if (talent) {
-    condition = { ...condition, talent: talent };
+  if (talent !== undefined) {
+    if (typeof talent !== "string" || !mongoose.isObjectIdOrHexString(talent)) {
+      throw new BadRequestError("Id pembicara tidak valid");
+    }
+    condition.talent = talent;
   }
 
   const result = await Events.find(condition)
