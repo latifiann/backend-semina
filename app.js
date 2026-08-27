@@ -15,6 +15,7 @@ const categoriesRouter = require("./app/api/v1/categories/router");
 const imagesRouter = require("./app/api/v1/images/router");
 const talentsRouter = require("./app/api/v1/talents/router");
 const eventsRouter = require("./app/api/v1/events/router");
+const organizersRouter = require("./app/api/v1/organizers/router");
 
 const v1 = "/api/v1/cms";
 
@@ -31,6 +32,7 @@ app.use(v1, categoriesRouter);
 app.use(v1, imagesRouter);
 app.use(v1, talentsRouter);
 app.use(v1, eventsRouter);
+app.use(v1, organizersRouter);
 
 app.use(notFoundMiddleware);
 app.use(handleErrorMiddleware);
