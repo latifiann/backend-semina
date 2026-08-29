@@ -7,6 +7,6 @@ if (!process.env.JWT_SECRET) {
 
 module.exports = {
   urlDb: process.env.URL_MONGODB_DEV,
-  jwtExpiration: "30m",
+  jwtExpiration: "24h",
   jwtSecret: process.env.JWT_SECRET,
 };

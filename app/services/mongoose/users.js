@@ -13,10 +13,9 @@ const createOrganizer = async (req) => {
   let user;
 
   await mongoose.connection.transaction(async (session) => {
-    const [organizerDocument] = await Organizers.create(
-      [{ organizer }],
-      { session },
-    );
+    const [organizerDocument] = await Organizers.create([{ organizer }], {
+      session,
+    });
 
     [user] = await Users.create(
       [
@@ -38,4 +37,25 @@ const createOrganizer = async (req) => {
   return result;
 };
 
-module.exports = { createOrganizer };
+const createUser = async (req) => {
+  const { name, password, role, confirmPassword, email } = req.body;
+
+  if (password !== confirmPassword) {
+    throw new BadRequestError("Password dan konfirmasi password tidak sesuai");
+  }
+
+  const user = await Users.create({
+    name,
+    email,
+    organizer: req.user.organizer,
+    password,
+    role,
+  });
+
+  const result = user.toObject();
+  delete result.password;
+
+  return result;
+};
+
+module.exports = { createOrganizer, createUser };
