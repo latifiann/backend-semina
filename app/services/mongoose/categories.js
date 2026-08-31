@@ -22,7 +22,10 @@ const createCategories = async (req) => {
 
   validateCategoryName(name);
 
-  const check = await Categories.findOne({ name });
+  const check = await Categories.findOne({
+    name,
+    organizer: req.user.organizer,
+  });
 
   if (check) throw new BadRequestError("Nama kategori duplikat");
 

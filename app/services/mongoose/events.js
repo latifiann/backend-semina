@@ -9,7 +9,7 @@ const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const getAllEvents = async (req) => {
   const { keyword, category, talent } = req.query;
-  let condition = {};
+  let condition = { organizer: req.user.organizer };
 
   if (keyword !== undefined && typeof keyword !== "string") {
     throw new BadRequestError("Keyword harus berupa string");
@@ -92,6 +92,7 @@ const createEvents = async (req) => {
     image,
     category,
     talent,
+    organizer: req.user.organizer,
   });
 
   return result;
@@ -100,7 +101,10 @@ const createEvents = async (req) => {
 const getOneEvents = async (req) => {
   const { id } = req.params;
 
-  const result = await Events.findOne({ _id: id })
+  const result = await Events.findOne({
+    _id: id,
+    organizer: req.user.organizer,
+  })
     .populate({ path: "image", select: "_id name" })
     .populate({ path: "category", select: "_id name" })
     .populate({
@@ -140,6 +144,7 @@ const updateEvents = async (req) => {
 
   const check = await Events.findOne({
     title,
+    organizer: req.user.organizer,
     _id: { $ne: id },
   });
 
@@ -159,6 +164,7 @@ const updateEvents = async (req) => {
       image,
       category,
       talent,
+      organizer: req.user.organizer,
     },
     { new: true, runValidators: true },
   );
@@ -175,6 +181,7 @@ const deleteEvents = async (req) => {
 
   const result = await Events.findOne({
     _id: id,
+    organizer: req.user.organizer,
   });
 
   if (!result) throw new NotFoundError(`Tidak ada acara dengan id: ${id}`);

@@ -5,7 +5,6 @@ let talentSchema = new Schema(
   {
     name: {
       type: String,
-      unique: true,
       required: [true, "Nama harus diisi"],
     },
     role: {
@@ -15,6 +14,11 @@ let talentSchema = new Schema(
     image: {
       type: mongoose.Types.ObjectId,
       ref: "Image",
+      required: true,
+    },
+    organizer: {
+      type: mongoose.Types.ObjectId,
+      ref: "Organizer",
       required: true,
     },
   },
