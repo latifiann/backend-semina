@@ -33,7 +33,6 @@ const EventSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      unique: true,
       required: [true, "Judul harus diisi"],
       minLength: 3,
       maxLength: 50,
@@ -59,6 +58,7 @@ const EventSchema = new mongoose.Schema(
     statusEvent: {
       type: String,
       enum: ["Draft", "Published"],
+      default: "Draft",
     },
     tickets: {
       type: [ticketCategoriesSchema],
@@ -81,6 +81,11 @@ const EventSchema = new mongoose.Schema(
     talent: {
       type: mongoose.Types.ObjectId,
       ref: "Talent",
+      required: true,
+    },
+    organizer: {
+      type: mongoose.Types.ObjectId,
+      ref: "Organizer",
       required: true,
     },
   },

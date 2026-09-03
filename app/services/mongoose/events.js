@@ -8,8 +8,8 @@ const mongoose = require("mongoose");
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const getAllEvents = async (req) => {
-  const { keyword, category, talent } = req.query;
-  let condition = {};
+  const { keyword, category, talent, status } = req.query;
+  let condition = { organizer: req.user.organizer };
 
   if (keyword !== undefined && typeof keyword !== "string") {
     throw new BadRequestError("Keyword harus berupa string");
@@ -45,6 +45,10 @@ const getAllEvents = async (req) => {
     condition.talent = talent;
   }
 
+  if (["Draft", "Published"].includes(status)) {
+    condition = { ...condition, statusEvent: status };
+  }
+
   const result = await Events.find(condition)
     .populate({ path: "image", select: "_id name" })
     .populate({ path: "category", select: "_id name" })
@@ -73,10 +77,10 @@ const createEvents = async (req) => {
   } = req.body;
 
   await checkingImage(image);
-  await checkingCategories(category);
-  await checkingTalents(talent);
+  await checkingCategories(category, req.user.organizer);
+  await checkingTalents(talent, req.user.organizer);
 
-  const check = await Events.findOne({ title });
+  const check = await Events.findOne({ title, organizer: req.user.organizer });
 
   if (check) throw new BadRequestError("Judul acara sudah terdaftar");
 
@@ -92,6 +96,7 @@ const createEvents = async (req) => {
     image,
     category,
     talent,
+    organizer: req.user.organizer,
   });
 
   return result;
@@ -100,7 +105,10 @@ const createEvents = async (req) => {
 const getOneEvents = async (req) => {
   const { id } = req.params;
 
-  const result = await Events.findOne({ _id: id })
+  const result = await Events.findOne({
+    _id: id,
+    organizer: req.user.organizer,
+  })
     .populate({ path: "image", select: "_id name" })
     .populate({ path: "category", select: "_id name" })
     .populate({
@@ -135,18 +143,19 @@ const updateEvents = async (req) => {
   if (!checkEvents) throw new NotFoundError(`Tidak ada acara dengan id: ${id}`);
 
   await checkingImage(image);
-  await checkingCategories(category);
-  await checkingTalents(talent);
+  await checkingCategories(category, req.user.organizer);
+  await checkingTalents(talent, req.user.organizer);
 
   const check = await Events.findOne({
     title,
+    organizer: req.user.organizer,
     _id: { $ne: id },
   });
 
   if (check) throw new BadRequestError("Judul acara sudah terdaftar");
 
   const result = await Events.findOneAndUpdate(
-    { _id: id },
+    { _id: id, organizer: req.user.organizer },
     {
       title,
       date,
@@ -175,6 +184,7 @@ const deleteEvents = async (req) => {
 
   const result = await Events.findOne({
     _id: id,
+    organizer: req.user.organizer,
   });
 
   if (!result) throw new NotFoundError(`Tidak ada acara dengan id: ${id}`);
@@ -184,10 +194,35 @@ const deleteEvents = async (req) => {
   return result;
 };
 
+const changeStatusEvents = async (req) => {
+  const { id } = req.params;
+  const { statusEvent } = req.body;
+
+  if (!["Draft", "Published"].includes(statusEvent)) {
+    throw new BadRequestError("Status harus Draft atau Published");
+  }
+
+  const checkEvent = await Events.findOne({
+    _id: id,
+    organizer: req.user.organizer,
+  });
+
+  if (!checkEvent) {
+    throw new NotFoundError(`Tidak ada event dengan id: ${id}`);
+  }
+
+  checkEvent.statusEvent = statusEvent;
+
+  await checkEvent.save();
+
+  return checkEvent;
+};
+
 module.exports = {
   getAllEvents,
   createEvents,
   getOneEvents,
   updateEvents,
   deleteEvents,
+  changeStatusEvents,
 };
