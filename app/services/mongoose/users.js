@@ -58,4 +58,10 @@ const createUser = async (req) => {
   return result;
 };
 
-module.exports = { createOrganizer, createUser };
+const getAllUser = async (req) => {
+  const result = await Users.find().select("-password");
+
+  return result;
+};
+
+module.exports = { createOrganizer, createUser, getAllUser };
