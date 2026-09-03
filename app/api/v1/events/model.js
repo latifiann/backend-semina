@@ -33,7 +33,6 @@ const EventSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      unique: true,
       required: [true, "Judul harus diisi"],
       minLength: 3,
       maxLength: 50,
@@ -59,6 +58,7 @@ const EventSchema = new mongoose.Schema(
     statusEvent: {
       type: String,
       enum: ["Draft", "Published"],
+      default: "Draft",
     },
     tickets: {
       type: [ticketCategoriesSchema],
