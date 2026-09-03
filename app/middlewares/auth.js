@@ -7,7 +7,7 @@ const authenticateUser = async (req, res, next) => {
 
     const authHeader = req.headers.authorization;
 
-    if (authHeader && authHeader.startsWith("Bearer")) {
+    if (authHeader && authHeader.startsWith("Bearer ")) {
       token = authHeader.split(" ")[1];
     }
 
@@ -27,6 +27,15 @@ const authenticateUser = async (req, res, next) => {
 
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return next(
+        new UnauthenticatedError("Token expired, please sign in again"),
+      );
+    }
+
+    if (error.name === "JsonWebTokenError") {
+      return next(new UnauthenticatedError("Authentication invalid"));
+    }
     next(error);
   }
 };
