@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
+const { urlDb } = require("../config");
 
-const { urlDb } = require("../config.js");
+const connectDB = () => mongoose.connect(urlDb);
 
-mongoose.connect(urlDb);
-
-const db = mongoose.connection;
-
-module.exports = db;
+module.exports = {
+  connectDB,
+  connection: mongoose.connection,
+};

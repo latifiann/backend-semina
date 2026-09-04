@@ -7,7 +7,7 @@
 const app = require("../app");
 const debug = require("debug")("server-semina:server");
 const http = require("http");
-const db = require("../app/db");
+const { connectDB, connection } = require("../app/db");
 
 /**
  * Get port from environment and store in Express.
@@ -20,21 +20,27 @@ app.set("port", port);
  * Create HTTP server.
  */
 
-db.on("error", function (err) {
-  console.log("connection error: tidak bisa tersambung ke mongodb");
-});
-
 const server = http.createServer(app);
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+server.on("error", onError);
+server.on("listening", onListening);
 
-db.on("open", function () {
-  server.listen(port);
-  server.on("error", onError);
-  server.on("listening", onListening);
+connection.on("disconnected", () => {
+  console.log("MongoDB disconnected");
 });
+
+async function start() {
+  try {
+    await connectDB();
+    debug("MongoDB connected successfully");
+    server.listen(port);
+  } catch (error) {
+    console.error("Failed to connect to MongoDB:", error.message);
+    process.exit(1);
+  }
+}
+
+start();
 
 /**
  * Normalize a port into a number, string, or false.
@@ -72,11 +78,9 @@ function onError(error) {
     case "EACCES":
       console.error(bind + " requires elevated privileges");
       process.exit(1);
-      break;
     case "EADDRINUSE":
       console.error(bind + " is already in use");
       process.exit(1);
-      break;
     default:
       throw error;
   }
