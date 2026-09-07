@@ -19,16 +19,23 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const renderTemplate = (templateName, data) => {
+  const templatePath = path.join(
+    __dirname,
+    `../../views/email/${templateName}.html`,
+  );
+  const template = fs.readFileSync(templatePath, "utf8");
+
+  return Mustache.render(template, data);
+};
+
 const otpMail = async (email, data) => {
   try {
-    const templatePath = path.join(__dirname, "../../views/email/otp.html");
-    const template = fs.readFileSync(templatePath, "utf8");
-
     const message = {
-      from: gmail,
+      from: `Semina <${gmail}>`,
       to: email,
       subject: "OTP for registration",
-      html: Mustache.render(template, data),
+      html: renderTemplate("otp", data),
     };
 
     return await transporter.sendMail(message);
@@ -40,4 +47,29 @@ const otpMail = async (email, data) => {
   }
 };
 
-module.exports = { otpMail };
+const checkoutMail = async (email, data) => {
+  const message = {
+    from: `Semina <${gmail}>`,
+    to: email,
+    subject: `Your Semina Checkout Confirmation - Order ${data.orderId}`,
+    text: [
+      `Hi ${data.customerName},`,
+      "",
+      `Your checkout for ${data.eventTitle} was successful and is pending payment.`,
+      `Order ID: ${data.orderId}`,
+      `Order date: ${data.orderDate}`,
+      `Event date: ${data.eventDate}`,
+      `Venue: ${data.venueName}`,
+      `Payment method: ${data.paymentType}`,
+      `Total tickets: ${data.totalOrderTicket}`,
+      `Total payment: ${data.totalPay}`,
+      "",
+      "Thank you for using Semina.",
+    ].join("\n"),
+    html: renderTemplate("order-confirmation", data),
+  };
+
+  return transporter.sendMail(message);
+};
+
+module.exports = { otpMail, checkoutMail };

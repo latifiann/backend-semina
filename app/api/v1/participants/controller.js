@@ -86,7 +86,9 @@ const checkout = async (req, res, next) => {
     const result = await checkoutOrder(req);
 
     res.status(StatusCodes.CREATED).json({
-      data: result,
+      data: result.order,
+      message: "Checkout completed successfully.",
+      email: result.email,
     });
   } catch (error) {
     next(error);

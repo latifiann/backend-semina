@@ -11,7 +11,17 @@ const {
   UnauthorizedError,
 } = require("../../errors");
 const { createJWT, createTokenParticipant } = require("../../utils");
-const { otpMail } = require("../mail");
+const { otpMail, checkoutMail } = require("../mail");
+
+const formatCurrency = (value) =>
+  `Rp${new Intl.NumberFormat("en-US").format(value)}`;
+
+const formatWibDate = (value) =>
+  `${new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "Asia/Jakarta",
+  }).format(value)} WIB`;
 
 const normalizeEmail = (email) => {
   if (typeof email !== "string") {
@@ -182,6 +192,9 @@ const checkoutOrder = async (req) => {
   }
 
   let result;
+  let emailRecipient;
+  let participantName;
+  let paymentType;
 
   try {
     await mongoose.connection.transaction(async (session) => {
@@ -212,6 +225,12 @@ const checkoutOrder = async (req) => {
       if (!checkingPayment) {
         throw new NotFoundError("Metode pembayaran tidak tersedia");
       }
+
+      emailRecipient = participant.email;
+      participantName = [participant.firstName, participant.lastName]
+        .filter(Boolean)
+        .join(" ");
+      paymentType = checkingPayment.type;
 
       let totalPay = 0;
       let totalOrderTicket = 0;
@@ -312,7 +331,40 @@ const checkoutOrder = async (req) => {
     throw error;
   }
 
-  return result;
+  const emailData = {
+    orderId: String(result._id),
+    customerName: participantName,
+    orderDate: formatWibDate(result.date),
+    eventTitle: result.historyEvent.title,
+    eventDate: formatWibDate(result.historyEvent.date),
+    venueName: result.historyEvent.venueName,
+    paymentType,
+    tickets: result.orderItems.map((item) => ({
+      type: item.ticketCategories.type,
+      quantity: item.sumTicket,
+      unitPrice: formatCurrency(item.ticketCategories.price),
+      subtotal: formatCurrency(item.ticketCategories.price * item.sumTicket),
+    })),
+    totalOrderTicket: result.totalOrderTicket,
+    totalPay: formatCurrency(result.totalPay),
+  };
+
+  let email = {
+    sent: true,
+    message: "Checkout confirmation was sent to your email.",
+  };
+
+  try {
+    await checkoutMail(emailRecipient, emailData);
+  } catch (error) {
+    console.error("Failed to send checkout confirmation email:", error);
+    email = {
+      sent: false,
+      message: "Order was created, but the confirmation email could not be sent.",
+    };
+  }
+
+  return { order: result, email };
 };
 
 module.exports = {
