@@ -3,6 +3,10 @@ const { model, Schema } = mongoose;
 
 const orderDetailSchema = new Schema({
   ticketCategories: {
+    ticketId: {
+      type: mongoose.Types.ObjectId,
+      required: true,
+    },
     type: {
       type: String,
       required: [true, "Tipe tiket harus diisi"],
@@ -15,6 +19,11 @@ const orderDetailSchema = new Schema({
   sumTicket: {
     type: Number,
     required: true,
+    min: [1, "Jumlah tiket minimal 1"],
+    validate: {
+      validator: Number.isInteger,
+      message: "Jumlah tiket harus berupa bilangan bulat",
+    },
   },
 });
 
@@ -54,6 +63,16 @@ const orderSchema = new Schema(
     totalPay: {
       type: Number,
       required: true,
+      min: [0, "Total pembayaran tidak boleh minus"],
+    },
+    totalOrderTicket: {
+      type: Number,
+      required: true,
+      min: [1, "Total tiket minimal 1"],
+      validate: {
+        validator: Number.isInteger,
+        message: "Total tiket harus berupa bilangan bulat",
+      },
     },
     orderItems: [orderDetailSchema],
     participant: {
