@@ -1,5 +1,6 @@
 node_modules
 .env
+.DS_Store
 public/uploads/*
 !public/uploads/avatar/
-!public/uploads/avatar/default.png
+!public/uploads/avatar/default.jpeg

@@ -11,7 +11,7 @@ const createImages = async (req) => {
   const result = await Images.create({
     name: req.file
       ? `uploads/${req.file.filename}`
-      : "uploads/avatar/default.png",
+      : "uploads/avatar/default.jpeg",
   });
 
   return result;
