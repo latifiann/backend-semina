@@ -17,6 +17,10 @@ const authenticateUser = async (req, res, next) => {
 
     const payload = isTokenValid({ token });
 
+    if (payload.subjectType !== "user" || !payload.userId) {
+      throw new UnauthenticatedError("Authentication invalid");
+    }
+
     req.user = {
       email: payload.email,
       role: payload.role,
@@ -56,6 +60,10 @@ const authenticateParticipant = async (req, res, next) => {
 
     const payload = isTokenValid({ token });
 
+    if (payload.subjectType !== "participant" || !payload.participantId) {
+      throw new UnauthenticatedError("Authentication invalid");
+    }
+
     req.participant = {
       firstName: payload.firstName,
       lastName: payload.lastName,
@@ -65,6 +73,15 @@ const authenticateParticipant = async (req, res, next) => {
 
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return next(
+        new UnauthenticatedError("Token expired, please sign in again"),
+      );
+    }
+
+    if (error.name === "JsonWebTokenError") {
+      return next(new UnauthenticatedError("Authentication invalid"));
+    }
     next(error);
   }
 };

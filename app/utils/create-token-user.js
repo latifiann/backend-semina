@@ -1,5 +1,6 @@
 const createTokenUser = (user) => {
   return {
+    subjectType: "user",
     name: user.name,
     userId: user._id,
     role: user.role,
@@ -10,6 +11,7 @@ const createTokenUser = (user) => {
 
 const createTokenParticipant = (participant) => {
   return {
+    subjectType: "participant",
     firstName: participant.firstName,
     lastName: participant.lastName,
     participantId: participant._id,
