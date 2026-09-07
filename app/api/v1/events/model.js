@@ -89,7 +89,7 @@ const EventSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true, optimisticConcurrency: true },
 );
 
 module.exports = mongoose.model("Event", EventSchema);

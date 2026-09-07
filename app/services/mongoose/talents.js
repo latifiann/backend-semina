@@ -91,7 +91,7 @@ const updateTalents = async (req) => {
   const result = await Talents.findOneAndUpdate(
     { _id: id },
     { name, image, role, organizer: req.user.organizer },
-    { new: true, runValidators: true },
+    { returnDocument: "after", runValidators: true },
   );
 
   if (!result) throw new NotFoundError(`Tidak ada pembicara dengan id: ${id}`);

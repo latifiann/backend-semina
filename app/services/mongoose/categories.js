@@ -70,7 +70,7 @@ const updateCategories = async (req) => {
       organizer: req.user.organizer,
     },
     { name },
-    { new: true, runValidators: true },
+    { returnDocument: "after", runValidators: true },
   );
 
   if (!result) throw new NotFoundError(`Tidak ada kategori dengan id: ${id}`);
