@@ -169,7 +169,7 @@ const updateEvents = async (req) => {
       category,
       talent,
     },
-    { new: true, runValidators: true },
+    { returnDocument: "after", runValidators: true },
   );
 
   if (!result) {

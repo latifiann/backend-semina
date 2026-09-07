@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express();
+const router = express.Router();
 const { create } = require("./controller");
 const upload = require("../../../middlewares/multer");
 
