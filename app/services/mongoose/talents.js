@@ -77,7 +77,7 @@ const updateTalents = async (req) => {
   const { id } = req.params;
   const { name, image, role } = req.body;
 
-  await checkingTalents(id);
+  await checkingTalents(id, req.user.organizer);
   await checkingImage(image);
 
   const check = await Talents.findOne({
@@ -89,8 +89,11 @@ const updateTalents = async (req) => {
   if (check) throw new BadRequestError("Pembicara sudah terdaftar");
 
   const result = await Talents.findOneAndUpdate(
-    { _id: id },
-    { name, image, role, organizer: req.user.organizer },
+    {
+      _id: id,
+      organizer: req.user.organizer,
+    },
+    { name, image, role },
     { returnDocument: "after", runValidators: true },
   );
 
